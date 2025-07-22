@@ -4,13 +4,7 @@ import {
   FileText, 
   CheckCircle, 
   Clock, 
-  Code, 
-  Folder,
-  File,
-  Activity,
-  Eye,
-  Terminal,
-  Download
+ 
 } from 'lucide-react';
 
 

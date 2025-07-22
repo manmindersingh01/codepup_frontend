@@ -4,7 +4,6 @@ import {
   Eye,
   X,
   Palette,
-  Code2,
   Smartphone,
   Monitor,
   Tablet,
@@ -14,8 +13,6 @@ import {
   Layout,
   Type,
   Sparkles,
-  ExternalLink,
-  Play,
   Settings,
 } from "lucide-react";
 
@@ -52,7 +49,6 @@ interface ExpandableDesignPreviewProps {
   designChoices: DesignChoices;
   isOpen: boolean;
   onClose: () => void;
-  onGenerate?: () => void;
   projectName?: string;
 }
 
@@ -307,7 +303,6 @@ const ExpandableDesignPreview: React.FC<ExpandableDesignPreviewProps> = ({
   designChoices,
   isOpen,
   onClose,
-  onGenerate,
   projectName = "Design Preview"
 }) => {
   const [activeDevice, setActiveDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");

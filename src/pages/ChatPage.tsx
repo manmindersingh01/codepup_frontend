@@ -1,7 +1,6 @@
 // components/ChatPage.tsx - ENHANCED WITH VISIBLE CODE STREAMING
 
-import React, { useContext, useEffect } from "react";
-import { MyContext } from "../context/FrontendStructureContext";
+import React, { useEffect } from "react";
 import {
   Send,
   Code,
@@ -10,7 +9,6 @@ import {
   AlertCircle,
   ExternalLink,
   Activity,
-  CheckCircle,
   Clock,
   FileText,
   Database,
@@ -19,14 +17,11 @@ import {
 } from "lucide-react";
 import { 
   StreamingCodeDisplay, 
-  FileCompletionTracker 
+ 
 } from './streaming';
 import { useChatPageState, useChatPageLogic } from '../hooks/chatpage_hooks';
-import type { ContextValue } from '../types/index';
 
 const ChatPage: React.FC = () => {
-  const context = useContext(MyContext);
-  const { value } = context as ContextValue;
   
   // Use custom hooks for state and logic
   const state = useChatPageState();
@@ -52,9 +47,6 @@ const ChatPage: React.FC = () => {
     isStreamingGeneration,
     streamingProgress,
     streamingPhase,
-    streamingMessage,
-    streamingStats,
-    showStreamingDetails,
     streamingCodeContent,
     generatedFiles,
     currentGeneratingFile,
@@ -74,12 +66,8 @@ const ChatPage: React.FC = () => {
     handleSubmit,
     handleKeyPress,
     retryConnection,
-    formatDuration,
-    formatSpeed,
     messagesEndRef,
     projectId,
-    passedUserId,
-    clerkId,
     fromWorkflow,
     existingProject,
   } = logic;
@@ -91,7 +79,6 @@ const ChatPage: React.FC = () => {
 
   // Determine if we should show code stream prominently
   const shouldShowCodeStream = showCodeStream && (isStreamingGeneration || !previewUrl);
-  const hasActivePreview = previewUrl && !isWorkflowActive && !isStreamingGeneration;
 
   return (
     <div className="w-full bg-gradient-to-br from-black via-neutral-950 to-black h-screen flex">
@@ -235,7 +222,7 @@ const ChatPage: React.FC = () => {
           scrollbarWidth: 'none',
           msOverflowStyle: 'none'
         }}>
-          <style jsx>{`
+          <style>{`
             .scrollbar-hide::-webkit-scrollbar {
               display: none;
             }
@@ -769,7 +756,7 @@ const ChatPage: React.FC = () => {
                 icon: "⚛️", 
                 description: "Creating user interface"
               },
-            ].map((step, index) => {
+            ].map((step) => {
               const stepData = workflowSteps.find(s => s.step === step.name);
               const isActive = currentWorkflowStep === step.name;
               const isComplete = stepData?.isComplete;

@@ -19,7 +19,6 @@ import {
   Trash2,
   MessageSquare,
   Clock,
-  AlertCircle,
   Database,
   Send,
   CheckCircle,
@@ -89,16 +88,6 @@ interface DesignChoices {
   differentLayouts?: string[];
   differentSections?: string[];
   components?: string[];
-}
-
-interface WorkflowStep {
-  step: string;
-  designChoices?: DesignChoices;
-  message: string;
-  readyToGenerate?: boolean;
-  needsMoreInfo?: boolean;
-  question?: string;
-  explanation?: string;
 }
 
 interface WorkflowMessage {
@@ -634,13 +623,6 @@ const Index = () => {
   const { user: clerkUser, isLoaded } = useUser();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to bottom when messages change
- // Auto-scroll to bottom when messages change
-const scrollToBottom = useCallback(() => {
-  // Commenting out auto-scroll behavior
-  // messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-}, []);
-
   // Load Supabase config from localStorage on mount
   useEffect(() => {
     const stored = localStorage.getItem("supabaseConfig");
@@ -826,7 +808,7 @@ const scrollToBottom = useCallback(() => {
       formData.append('userId', dbUser.id.toString());
       formData.append('projectId', projectResponse.data.id.toString());
       
-      selectedImages.forEach((image, index) => {
+      selectedImages.forEach((image) => {
         formData.append('images', image);
       });
 
@@ -1785,10 +1767,6 @@ const scrollToBottom = useCallback(() => {
         designChoices={selectedDesignForPreview || {}}
         isOpen={showDesignPreview}
         onClose={() => setShowDesignPreview(false)}
-        onGenerate={() => {
-          setShowDesignPreview(false);
-          generateApplication();
-        }}
         projectName={selectedDesignForPreview ? "Design Preview" : "Project Preview"}
       />
     </>

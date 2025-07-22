@@ -220,14 +220,12 @@ const sendModificationRequest = useCallback(async (modificationPrompt: string) =
   if (!projectId || !modificationPrompt.trim()) return;
   
   setIsModifying(true);
-  setIsStreamingModification(true);  // NEW
-  setStreamingData(null);            // NEW
   setError("");
   
   try {
-    console.log("🚀 Starting streaming modification request");
+    console.log("🚀 Starting modification request");
     
-    const response = await fetch(`${baseUrl}/api/modify/stream`, {
+    const response = await fetch(`${baseUrl}/api/modify`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -237,7 +235,6 @@ const sendModificationRequest = useCallback(async (modificationPrompt: string) =
         userId: getCurrentUserId(),
         deployedUrl: previewUrl,
         projectId: projectId,
-        clerkId: clerkId,
       }),
     });
 
@@ -245,76 +242,29 @@ const sendModificationRequest = useCallback(async (modificationPrompt: string) =
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const reader = response.body?.getReader();
-    if (!reader) {
-      throw new Error("No response body");
-    }
-
-    const decoder = new TextDecoder();
-    let buffer = "";
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split("\n");
-      buffer = lines.pop() || "";
-
-      for (const line of lines) {
-        if (line.startsWith("event: ") && lines[lines.indexOf(line) + 1]?.startsWith("data: ")) {
-          const eventType = line.slice(7).trim();
-          const dataLine = lines[lines.indexOf(line) + 1];
-          
-          try {
-            const eventData = JSON.parse(dataLine.slice(6));
-            console.log(`📡 Streaming Event [${eventType}]:`, eventData);
-            
-            // Update streaming data for display
-            setStreamingData({
-              type: eventType,
-              ...eventData,
-              timestamp: new Date().toISOString()
-            });
-            
-            // Handle different events
-            if (eventType === 'complete') {
-              setIsStreamingModification(false);
-              setIsModifying(false);
-              
-              // Update preview URL if new one is provided - THIS IS KEY FOR NEW DEPLOYMENT URL
-              if (eventData.data?.newDeploymentUrl || eventData.data?.previewUrl) {
-                const newUrl = eventData.data.newDeploymentUrl || eventData.data.previewUrl;
-                setPreviewUrl(newUrl);
-                console.log("🆕 NEW DEPLOYMENT URL:", newUrl);
-              }
-              
-              // Add success message
-              const successMessage: Message = {
-                id: `mod-success-${Date.now()}`,
-                content: `✅ **Modification Complete!**\n\n🌐 **New Deployment**: [${eventData.data?.newDeploymentUrl || eventData.data?.previewUrl}](${eventData.data?.newDeploymentUrl || eventData.data?.previewUrl})\n\n📊 **Files Modified**: ${eventData.data?.totalModifiedFiles || 0}\n📁 **Files Added**: ${eventData.data?.totalAddedFiles || 0}`,
-                type: "assistant",
-                timestamp: new Date(),
-              };
-              setMessages(prev => [...prev, successMessage]);
-              
-            } else if (eventType === 'error') {
-              setIsStreamingModification(false);
-              setIsModifying(false);
-              setError(eventData.error || "Modification failed");
-            }
-            
-          } catch (e) {
-            console.warn("Error parsing streaming data:", e);
-          }
-        }
+    const result = await response.json();
+    
+    if (result.success) {
+      const successMessage: Message = {
+        id: `mod-success-${Date.now()}`,
+        content: `✅ **Modification Complete!**\n\n${result.message || 'Your changes have been applied successfully.'}`,
+        type: "assistant",
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, successMessage]);
+      
+      if (result.newDeploymentUrl) {
+        setPreviewUrl(result.newDeploymentUrl);
       }
+    } else {
+      throw new Error(result.error || "Modification failed");
     }
     
   } catch (error) {
-    console.error("❌ Streaming modification failed:", error);
-    setError("Failed to apply modification");
-    setIsStreamingModification(false);
+    console.error("❌ Modification failed:", error);
+    const errorMessage = error instanceof Error ? error.message : "Failed to apply modification";
+    setError(errorMessage);
+  } finally {
     setIsModifying(false);
   }
 }, [
@@ -322,10 +272,7 @@ const sendModificationRequest = useCallback(async (modificationPrompt: string) =
   baseUrl,
   getCurrentUserId,
   previewUrl,
-  clerkId,
   setIsModifying,
-  setIsStreamingModification,   // NEW DEPENDENCY
-  setStreamingData,             // NEW DEPENDENCY
   setError,
   setPreviewUrl,
   setMessages
@@ -1095,7 +1042,7 @@ useEffect(() => {
   };
 
   // More precise detection for actual refresh vs tab switch
-  const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+  const handleBeforeUnload = () => {
     // This only triggers on actual page navigation/refresh/close
     handlePageUnload();
   };
