@@ -1,7 +1,7 @@
 // SupabaseConfigForm.tsx
-import React, { useState, useCallback, useEffect } from 'react';
-import { 
-  Database, 
+import React, { useState, useCallback, useEffect } from "react";
+import {
+  Database,
   Eye,
   EyeOff,
   Info,
@@ -10,8 +10,8 @@ import {
   Wand2,
   Loader2,
   Trash2,
-  AlertTriangle
-} from 'lucide-react';
+  AlertTriangle,
+} from "lucide-react";
 
 interface SupabaseConfig {
   supabaseUrl: string;
@@ -82,13 +82,13 @@ const SupabaseConfigForm: React.FC<SupabaseConfigFormProps> = ({
   isOpen,
   onClose,
   onSubmit,
-  initialConfig = {}
+  initialConfig = {},
 }) => {
   const [config, setConfig] = useState<SupabaseConfig>({
-    supabaseUrl: initialConfig.supabaseUrl || '',
-    supabaseAnonKey: initialConfig.supabaseAnonKey || '',
-    supabaseToken: initialConfig.supabaseToken || '',
-    databaseUrl: initialConfig.databaseUrl || ''
+    supabaseUrl: initialConfig.supabaseUrl || "",
+    supabaseAnonKey: initialConfig.supabaseAnonKey || "",
+    supabaseToken: initialConfig.supabaseToken || "",
+    databaseUrl: initialConfig.databaseUrl || "",
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -96,35 +96,35 @@ const SupabaseConfigForm: React.FC<SupabaseConfigFormProps> = ({
     supabaseToken: false,
     supabaseAnonKey: false,
     databaseUrl: false,
-    accessToken: false
+    accessToken: false,
   });
 
   // Auto-setup states
-  const [accessToken, setAccessToken] = useState('');
+  const [accessToken, setAccessToken] = useState("");
   const [isAutoFetching, setIsAutoFetching] = useState(false);
   const [showProjectLimit, setShowProjectLimit] = useState(false);
   const [limitProjects, setLimitProjects] = useState<ProjectInfo[]>([]);
-  const [projectIdToDelete, setProjectIdToDelete] = useState('');
+  const [projectIdToDelete, setProjectIdToDelete] = useState("");
   const [isDeletingProject, setIsDeletingProject] = useState(false);
 
   // Load from localStorage on mount
   useEffect(() => {
     if (isOpen) {
-      const stored = localStorage.getItem('supabaseConfig');
+      const stored = localStorage.getItem("supabaseConfig");
       if (stored) {
         try {
           const parsedConfig = JSON.parse(stored);
-          setConfig(prev => ({
+          setConfig((prev) => ({
             ...prev,
-            ...parsedConfig
+            ...parsedConfig,
           }));
         } catch (error) {
-          console.warn('Failed to load stored Supabase config');
+          console.warn("Failed to load stored Supabase config");
         }
       }
-      
+
       // Load stored access token
-      const storedToken = localStorage.getItem('supabaseAccessToken');
+      const storedToken = localStorage.getItem("supabaseAccessToken");
       if (storedToken) {
         setAccessToken(storedToken);
       }
@@ -142,257 +142,300 @@ const SupabaseConfigForm: React.FC<SupabaseConfigFormProps> = ({
   };
 
   const validateSupabaseUrl = (url: string): boolean => {
-    return url.includes('supabase.co') && validateUrl(url);
+    return url.includes("supabase.co") && validateUrl(url);
   };
 
   const validateForm = useCallback((): boolean => {
     const newErrors: FormErrors = {};
 
     if (!config.supabaseUrl.trim()) {
-      newErrors.supabaseUrl = 'Supabase URL is required';
+      newErrors.supabaseUrl = "Supabase URL is required";
     } else if (!validateSupabaseUrl(config.supabaseUrl)) {
-      newErrors.supabaseUrl = 'Please enter a valid Supabase URL (e.g., https://xxx.supabase.co)';
+      newErrors.supabaseUrl =
+        "Please enter a valid Supabase URL (e.g., https://xxx.supabase.co)";
     }
 
     if (!config.supabaseAnonKey.trim()) {
-      newErrors.supabaseAnonKey = 'Supabase Anon Key is required';
+      newErrors.supabaseAnonKey = "Supabase Anon Key is required";
     } else if (config.supabaseAnonKey.length < 20) {
-      newErrors.supabaseAnonKey = 'Supabase Anon Key appears to be too short';
+      newErrors.supabaseAnonKey = "Supabase Anon Key appears to be too short";
     }
 
     if (!config.supabaseToken.trim()) {
-      newErrors.supabaseToken = 'Supabase Service Role Token is required';
+      newErrors.supabaseToken = "Supabase Service Role Token is required";
     } else if (config.supabaseToken.length < 20) {
-      newErrors.supabaseToken = 'Service Role Token appears to be too short';
+      newErrors.supabaseToken = "Service Role Token appears to be too short";
     }
 
     if (!config.databaseUrl.trim()) {
-      newErrors.databaseUrl = 'Database URL is required';
-    } else if (!config.databaseUrl.startsWith('postgresql://') && !config.databaseUrl.startsWith('postgres://')) {
-      newErrors.databaseUrl = 'Please enter a valid PostgreSQL connection string';
+      newErrors.databaseUrl = "Database URL is required";
+    } else if (
+      !config.databaseUrl.startsWith("postgresql://") &&
+      !config.databaseUrl.startsWith("postgres://")
+    ) {
+      newErrors.databaseUrl =
+        "Please enter a valid PostgreSQL connection string";
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }, [config]);
 
-  const handleInputChange = useCallback((field: keyof SupabaseConfig, value: string) => {
-    setConfig(prev => ({
-      ...prev,
-      [field]: value
-    }));
-
-    // Clear field error when user starts typing
-    if (errors[field]) {
-      setErrors(prev => ({
+  const handleInputChange = useCallback(
+    (field: keyof SupabaseConfig, value: string) => {
+      setConfig((prev) => ({
         ...prev,
-        [field]: undefined
+        [field]: value,
       }));
-    }
-  }, [errors]);
 
-  const toggleSecretVisibility = useCallback((field: keyof typeof showSecrets) => {
-    setShowSecrets(prev => ({
-      ...prev,
-      [field]: !prev[field]
-    }));
-  }, []);
+      // Clear field error when user starts typing
+      if (errors[field]) {
+        setErrors((prev) => ({
+          ...prev,
+          [field]: undefined,
+        }));
+      }
+    },
+    [errors]
+  );
 
-const API_BASE_URL = import.meta.env.VITE_API_URL ||'http://localhost:3000';
+  const toggleSecretVisibility = useCallback(
+    (field: keyof typeof showSecrets) => {
+      setShowSecrets((prev) => ({
+        ...prev,
+        [field]: !prev[field],
+      }));
+    },
+    []
+  );
+
+  const API_BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:3000";
 
   // Auto-fetch credentials function
-const handleAutoFetchCredentials = async () => {
-  if (!accessToken.trim()) {
-    setErrors(prev => ({ ...prev, accessToken: 'Access token is required' }));
-    return;
-  }
-
-  setIsAutoFetching(true);
-  setErrors(prev => ({ ...prev, accessToken: undefined }));
-  
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/supabase/getCredentials`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        accessToken,
-        projectName: 'codePup',
-        forceCreate: false
-      }),
-    });
-
-    // Check if response is ok and has content
-    if (!response.ok) {
-      let errorData;
-      const contentType = response.headers.get('content-type');
-      
-      if (contentType && contentType.includes('application/json')) {
-        try {
-          errorData = await response.json();
-        } catch (jsonError) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-      } else {
-        const textData = await response.text();
-        throw new Error(textData || `HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      if (response.status === 409 && errorData.action === 'delete_required') {
-        // Show project limit UI
-        const limitData = errorData as ProjectLimitResponse;
-        setLimitProjects(limitData.projects || []);
-        setShowProjectLimit(true);
-        setErrors(prev => ({ 
-          ...prev, 
-          accessToken: limitData.message || 'Project limit reached' 
-        }));
-        return;
-      } else {
-        throw new Error(errorData?.details || errorData?.error || `HTTP ${response.status}: Request failed`);
-      }
-    }
-
-    // Parse successful response
-    let data;
-    try {
-      data = await response.json();
-    } catch (jsonError) {
-      throw new Error('Invalid response format from server');
-    }
-
-    if (!data.success) {
-      throw new Error(data.details || data.error || 'Unknown error occurred');
-    }
-
-    // Success - populate the form
-    const credentialsData = data as CredentialsResponse;
-    const { credentials } = credentialsData.supabaseProject;
-    
-    if (!credentials) {
-      throw new Error('No credentials received from server');
-    }
-
-    setConfig({
-      supabaseUrl: credentials.supabaseUrl || '',
-      supabaseAnonKey: credentials.supabaseAnonKey || '',
-      supabaseToken: accessToken, // Use the access token as service role token
-      databaseUrl: credentials.databaseUrl || credentials.poolerUrl || ''
-    });
-
-    // Save access token for future use
-    localStorage.setItem('supabaseAccessToken', accessToken);
-    
-    setErrors({});
-    setShowProjectLimit(false);
-
-  } catch (error) {
-    console.error('Error fetching credentials:', error);
-    setErrors(prev => ({ 
-      ...prev, 
-      accessToken: error instanceof Error ? error.message : 'Unknown error occurred' 
-    }));
-  } finally {
-    setIsAutoFetching(false);
-  }
-};
-
-
-  // Delete project function
-
-const handleDeleteProject = async () => {
-  if (!projectIdToDelete.trim()) {
-    setErrors(prev => ({ ...prev, projectId: 'Project ID is required' }));
-    return;
-  }
-
-  setIsDeletingProject(true);
-  setErrors(prev => ({ ...prev, projectId: undefined }));
-
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/supabase/deleteProject/${projectIdToDelete}`, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        accessToken
-      }),
-    });
-
-    // Check if response is ok and has content
-    if (!response.ok) {
-      let errorData;
-      const contentType = response.headers.get('content-type');
-      
-      if (contentType && contentType.includes('application/json')) {
-        try {
-          errorData = await response.json();
-        } catch (jsonError) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-      } else {
-        const textData = await response.text();
-        throw new Error(textData || `HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      throw new Error(errorData?.details || errorData?.error || `HTTP ${response.status}: Request failed`);
-    }
-
-    // Parse successful response
-    let data;
-    try {
-      data = await response.json();
-    } catch (jsonError) {
-      throw new Error('Invalid response format from server');
-    }
-
-    if (!data.success) {
-      throw new Error(data.details || data.error || 'Delete operation failed');
-    }
-
-    // Success - hide project limit UI and reset
-    setShowProjectLimit(false);
-    setProjectIdToDelete('');
-    setLimitProjects([]);
-    setErrors(prev => ({ ...prev, accessToken: undefined, projectId: undefined }));
-    
-    // Show success message
-    alert('✅ Project deleted successfully! You can now retry fetching credentials.');
-
-  } catch (error) {
-    console.error('Error deleting project:', error);
-    setErrors(prev => ({ 
-      ...prev, 
-      projectId: error instanceof Error ? error.message : 'Unknown error occurred' 
-    }));
-  } finally {
-    setIsDeletingProject(false);
-  }
-};
-
-  const handleSubmit = useCallback((e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!validateForm()) {
+  const handleAutoFetchCredentials = async () => {
+    if (!accessToken.trim()) {
+      setErrors((prev) => ({
+        ...prev,
+        accessToken: "Access token is required",
+      }));
       return;
     }
 
-    // Save to localStorage
-    localStorage.setItem('supabaseConfig', JSON.stringify(config));
-    
-    // Submit to parent
-    onSubmit(config);
-    onClose();
-  }, [config, validateForm, onSubmit, onClose]);
+    setIsAutoFetching(true);
+    setErrors((prev) => ({ ...prev, accessToken: undefined }));
+
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/supabase/getCredentials`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            accessToken,
+            projectName: "codePup",
+            forceCreate: false,
+          }),
+        }
+      );
+
+      // Check if response is ok and has content
+      if (!response.ok) {
+        let errorData;
+        const contentType = response.headers.get("content-type");
+
+        if (contentType && contentType.includes("application/json")) {
+          try {
+            errorData = await response.json();
+          } catch (jsonError) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          }
+        } else {
+          const textData = await response.text();
+          throw new Error(
+            textData || `HTTP ${response.status}: ${response.statusText}`
+          );
+        }
+
+        if (response.status === 409 && errorData.action === "delete_required") {
+          // Show project limit UI
+          const limitData = errorData as ProjectLimitResponse;
+          setLimitProjects(limitData.projects || []);
+          setShowProjectLimit(true);
+          setErrors((prev) => ({
+            ...prev,
+            accessToken: limitData.message || "Project limit reached",
+          }));
+          return;
+        } else {
+          throw new Error(
+            errorData?.details ||
+              errorData?.error ||
+              `HTTP ${response.status}: Request failed`
+          );
+        }
+      }
+
+      // Parse successful response
+      let data;
+      try {
+        data = await response.json();
+      } catch (jsonError) {
+        throw new Error("Invalid response format from server");
+      }
+
+      if (!data.success) {
+        throw new Error(data.details || data.error || "Unknown error occurred");
+      }
+
+      // Success - populate the form
+      const credentialsData = data as CredentialsResponse;
+      const { credentials } = credentialsData.supabaseProject;
+
+      if (!credentials) {
+        throw new Error("No credentials received from server");
+      }
+
+      setConfig({
+        supabaseUrl: credentials.supabaseUrl || "",
+        supabaseAnonKey: credentials.supabaseAnonKey || "",
+        supabaseToken: accessToken, // Use the access token as service role token
+        databaseUrl: credentials.databaseUrl || credentials.poolerUrl || "",
+      });
+
+      // Save access token for future use
+      localStorage.setItem("supabaseAccessToken", accessToken);
+
+      setErrors({});
+      setShowProjectLimit(false);
+    } catch (error) {
+      console.error("Error fetching credentials:", error);
+      setErrors((prev) => ({
+        ...prev,
+        accessToken:
+          error instanceof Error ? error.message : "Unknown error occurred",
+      }));
+    } finally {
+      setIsAutoFetching(false);
+    }
+  };
+
+  // Delete project function
+
+  const handleDeleteProject = async () => {
+    if (!projectIdToDelete.trim()) {
+      setErrors((prev) => ({ ...prev, projectId: "Project ID is required" }));
+      return;
+    }
+
+    setIsDeletingProject(true);
+    setErrors((prev) => ({ ...prev, projectId: undefined }));
+
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/supabase/deleteProject/${projectIdToDelete}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            accessToken,
+          }),
+        }
+      );
+
+      // Check if response is ok and has content
+      if (!response.ok) {
+        let errorData;
+        const contentType = response.headers.get("content-type");
+
+        if (contentType && contentType.includes("application/json")) {
+          try {
+            errorData = await response.json();
+          } catch (jsonError) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          }
+        } else {
+          const textData = await response.text();
+          throw new Error(
+            textData || `HTTP ${response.status}: ${response.statusText}`
+          );
+        }
+
+        throw new Error(
+          errorData?.details ||
+            errorData?.error ||
+            `HTTP ${response.status}: Request failed`
+        );
+      }
+
+      // Parse successful response
+      let data;
+      try {
+        data = await response.json();
+      } catch (jsonError) {
+        throw new Error("Invalid response format from server");
+      }
+
+      if (!data.success) {
+        throw new Error(
+          data.details || data.error || "Delete operation failed"
+        );
+      }
+
+      // Success - hide project limit UI and reset
+      setShowProjectLimit(false);
+      setProjectIdToDelete("");
+      setLimitProjects([]);
+      setErrors((prev) => ({
+        ...prev,
+        accessToken: undefined,
+        projectId: undefined,
+      }));
+
+      // Show success message
+      alert(
+        "✅ Project deleted successfully! You can now retry fetching credentials."
+      );
+    } catch (error) {
+      console.error("Error deleting project:", error);
+      setErrors((prev) => ({
+        ...prev,
+        projectId:
+          error instanceof Error ? error.message : "Unknown error occurred",
+      }));
+    } finally {
+      setIsDeletingProject(false);
+    }
+  };
+
+  const handleSubmit = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+
+      if (!validateForm()) {
+        return;
+      }
+
+      // Save to localStorage
+      localStorage.setItem("supabaseConfig", JSON.stringify(config));
+
+      // Submit to parent
+      onSubmit(config);
+      onClose();
+    },
+    [config, validateForm, onSubmit, onClose]
+  );
 
   const loadExampleData = useCallback(() => {
     setConfig({
-      supabaseUrl: 'https://your-project.supabase.co',
-      supabaseAnonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
-      supabaseToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
-      databaseUrl: 'postgresql://postgres:[password]@db.your-project.supabase.co:5432/postgres'
+      supabaseUrl: "https://your-project.supabase.co",
+      supabaseAnonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+      supabaseToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+      databaseUrl:
+        "postgresql://postgres:[password]@db.your-project.supabase.co:5432/postgres",
     });
   }, []);
 
@@ -408,8 +451,12 @@ const handleDeleteProject = async () => {
               <Database className="w-6 h-6 text-purple-400" />
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-white">Supabase Configuration</h2>
-              <p className="text-sm text-slate-400">Configure your backend connection</p>
+              <h2 className="text-xl font-semibold text-white">
+                Supabase Configuration
+              </h2>
+              <p className="text-sm text-slate-400">
+                Configure your backend connection
+              </p>
             </div>
           </div>
           <button
@@ -426,9 +473,12 @@ const handleDeleteProject = async () => {
             <div className="flex items-start gap-3 mb-4">
               <Wand2 className="w-5 h-5 text-purple-400 mt-0.5" />
               <div>
-                <h3 className="font-medium text-white mb-1">Auto-Setup Backend</h3>
+                <h3 className="font-medium text-white mb-1">
+                  Auto-Setup Backend
+                </h3>
                 <p className="text-sm text-slate-400">
-                  Enter your Supabase access token to automatically fetch and configure credentials
+                  Enter your Supabase access token to automatically fetch and
+                  configure credentials
                 </p>
               </div>
             </div>
@@ -440,29 +490,40 @@ const handleDeleteProject = async () => {
                 </label>
                 <div className="relative">
                   <input
-                    type={showSecrets.accessToken ? 'text' : 'password'}
+                    type={showSecrets.accessToken ? "text" : "password"}
                     value={accessToken}
                     onChange={(e) => {
                       setAccessToken(e.target.value);
                       if (errors.accessToken) {
-                        setErrors(prev => ({ ...prev, accessToken: undefined }));
+                        setErrors((prev) => ({
+                          ...prev,
+                          accessToken: undefined,
+                        }));
                       }
                     }}
                     placeholder="Enter your Supabase access token..."
                     className={`w-full bg-black/30 border rounded-lg text-white p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-200 placeholder-slate-400 ${
-                      errors.accessToken ? 'border-red-500/50' : 'border-slate-600/50'
+                      errors.accessToken
+                        ? "border-red-500/50"
+                        : "border-slate-600/50"
                     }`}
                   />
                   <button
                     type="button"
-                    onClick={() => toggleSecretVisibility('accessToken')}
+                    onClick={() => toggleSecretVisibility("accessToken")}
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
                   >
-                    {showSecrets.accessToken ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showSecrets.accessToken ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
                   </button>
                 </div>
                 {errors.accessToken && (
-                  <p className="text-red-400 text-sm mt-1">{errors.accessToken}</p>
+                  <p className="text-red-400 text-sm mt-1">
+                    {errors.accessToken}
+                  </p>
                 )}
               </div>
 
@@ -493,9 +554,12 @@ const handleDeleteProject = async () => {
               <div className="flex items-start gap-3 mb-4">
                 <AlertTriangle className="w-5 h-5 text-red-400 mt-0.5" />
                 <div>
-                  <h3 className="font-medium text-white mb-1">Project Limit Reached</h3>
+                  <h3 className="font-medium text-white mb-1">
+                    Project Limit Reached
+                  </h3>
                   <p className="text-sm text-slate-400 mb-3">
-                    You have reached the maximum project limit. Delete a project to continue.
+                    You have reached the maximum project limit. Delete a project
+                    to continue.
                   </p>
                 </div>
               </div>
@@ -507,11 +571,20 @@ const handleDeleteProject = async () => {
                   </label>
                   <div className="space-y-2 max-h-32 overflow-y-auto">
                     {limitProjects.map((project) => (
-                      <div key={project.id} className="flex items-center justify-between p-2 bg-black/20 rounded border border-slate-600/30">
+                      <div
+                        key={project.id}
+                        className="flex items-center justify-between p-2 bg-black/20 rounded border border-slate-600/30"
+                      >
                         <div className="flex-1">
-                          <p className="text-white text-sm font-medium">{project.name}</p>
-                          <p className="text-slate-400 text-xs">ID: {project.id}</p>
-                          <p className="text-slate-400 text-xs">Status: {project.status}</p>
+                          <p className="text-white text-sm font-medium">
+                            {project.name}
+                          </p>
+                          <p className="text-slate-400 text-xs">
+                            ID: {project.id}
+                          </p>
+                          <p className="text-slate-400 text-xs">
+                            Status: {project.status}
+                          </p>
                         </div>
                       </div>
                     ))}
@@ -528,16 +601,23 @@ const handleDeleteProject = async () => {
                     onChange={(e) => {
                       setProjectIdToDelete(e.target.value);
                       if (errors.projectId) {
-                        setErrors(prev => ({ ...prev, projectId: undefined }));
+                        setErrors((prev) => ({
+                          ...prev,
+                          projectId: undefined,
+                        }));
                       }
                     }}
                     placeholder="Enter project ID to delete..."
                     className={`w-full bg-black/30 border rounded-lg text-white p-3 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50 transition-all duration-200 placeholder-slate-400 ${
-                      errors.projectId ? 'border-red-500/50' : 'border-slate-600/50'
+                      errors.projectId
+                        ? "border-red-500/50"
+                        : "border-slate-600/50"
                     }`}
                   />
                   {errors.projectId && (
-                    <p className="text-red-400 text-sm mt-1">{errors.projectId}</p>
+                    <p className="text-red-400 text-sm mt-1">
+                      {errors.projectId}
+                    </p>
                   )}
                 </div>
 
@@ -566,8 +646,10 @@ const handleDeleteProject = async () => {
           {/* Manual Configuration Section */}
           <div className="space-y-6">
             <div className="border-t border-slate-700 pt-6">
-              <h3 className="text-lg font-medium text-white mb-4">Manual Configuration</h3>
-              
+              <h3 className="text-lg font-medium text-white mb-4">
+                Manual Configuration
+              </h3>
+
               {/* Supabase URL */}
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-2">
@@ -576,14 +658,20 @@ const handleDeleteProject = async () => {
                 <input
                   type="url"
                   value={config.supabaseUrl}
-                  onChange={(e) => handleInputChange('supabaseUrl', e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("supabaseUrl", e.target.value)
+                  }
                   placeholder="https://your-project.supabase.co"
                   className={`w-full bg-black/30 border rounded-lg text-white p-3 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-200 placeholder-slate-400 ${
-                    errors.supabaseUrl ? 'border-red-500/50' : 'border-slate-600/50'
+                    errors.supabaseUrl
+                      ? "border-red-500/50"
+                      : "border-slate-600/50"
                   }`}
                 />
                 {errors.supabaseUrl && (
-                  <p className="text-red-400 text-sm mt-1">{errors.supabaseUrl}</p>
+                  <p className="text-red-400 text-sm mt-1">
+                    {errors.supabaseUrl}
+                  </p>
                 )}
               </div>
 
@@ -594,24 +682,34 @@ const handleDeleteProject = async () => {
                 </label>
                 <div className="relative">
                   <input
-                    type={showSecrets.supabaseAnonKey ? 'text' : 'password'}
+                    type={showSecrets.supabaseAnonKey ? "text" : "password"}
                     value={config.supabaseAnonKey}
-                    onChange={(e) => handleInputChange('supabaseAnonKey', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("supabaseAnonKey", e.target.value)
+                    }
                     placeholder="eyJhbGciOiJIUzI1NiIs..."
                     className={`w-full bg-black/30 border rounded-lg text-white p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-200 placeholder-slate-400 ${
-                      errors.supabaseAnonKey ? 'border-red-500/50' : 'border-slate-600/50'
+                      errors.supabaseAnonKey
+                        ? "border-red-500/50"
+                        : "border-slate-600/50"
                     }`}
                   />
                   <button
                     type="button"
-                    onClick={() => toggleSecretVisibility('supabaseAnonKey')}
+                    onClick={() => toggleSecretVisibility("supabaseAnonKey")}
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
                   >
-                    {showSecrets.supabaseAnonKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showSecrets.supabaseAnonKey ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
                   </button>
                 </div>
                 {errors.supabaseAnonKey && (
-                  <p className="text-red-400 text-sm mt-1">{errors.supabaseAnonKey}</p>
+                  <p className="text-red-400 text-sm mt-1">
+                    {errors.supabaseAnonKey}
+                  </p>
                 )}
               </div>
 
@@ -622,24 +720,34 @@ const handleDeleteProject = async () => {
                 </label>
                 <div className="relative">
                   <input
-                    type={showSecrets.supabaseToken ? 'text' : 'password'}
+                    type={showSecrets.supabaseToken ? "text" : "password"}
                     value={config.supabaseToken}
-                    onChange={(e) => handleInputChange('supabaseToken', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("supabaseToken", e.target.value)
+                    }
                     placeholder="eyJhbGciOiJIUzI1NiIs..."
                     className={`w-full bg-black/30 border rounded-lg text-white p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-200 placeholder-slate-400 ${
-                      errors.supabaseToken ? 'border-red-500/50' : 'border-slate-600/50'
+                      errors.supabaseToken
+                        ? "border-red-500/50"
+                        : "border-slate-600/50"
                     }`}
                   />
                   <button
                     type="button"
-                    onClick={() => toggleSecretVisibility('supabaseToken')}
+                    onClick={() => toggleSecretVisibility("supabaseToken")}
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
                   >
-                    {showSecrets.supabaseToken ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showSecrets.supabaseToken ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
                   </button>
                 </div>
                 {errors.supabaseToken && (
-                  <p className="text-red-400 text-sm mt-1">{errors.supabaseToken}</p>
+                  <p className="text-red-400 text-sm mt-1">
+                    {errors.supabaseToken}
+                  </p>
                 )}
               </div>
 
@@ -650,24 +758,34 @@ const handleDeleteProject = async () => {
                 </label>
                 <div className="relative">
                   <input
-                    type={showSecrets.databaseUrl ? 'text' : 'password'}
+                    type={showSecrets.databaseUrl ? "text" : "password"}
                     value={config.databaseUrl}
-                    onChange={(e) => handleInputChange('databaseUrl', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("databaseUrl", e.target.value)
+                    }
                     placeholder="postgresql://postgres:[password]@db.your-project.supabase.co:5432/postgres"
                     className={`w-full bg-black/30 border rounded-lg text-white p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-200 placeholder-slate-400 ${
-                      errors.databaseUrl ? 'border-red-500/50' : 'border-slate-600/50'
+                      errors.databaseUrl
+                        ? "border-red-500/50"
+                        : "border-slate-600/50"
                     }`}
                   />
                   <button
                     type="button"
-                    onClick={() => toggleSecretVisibility('databaseUrl')}
+                    onClick={() => toggleSecretVisibility("databaseUrl")}
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
                   >
-                    {showSecrets.databaseUrl ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showSecrets.databaseUrl ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
                   </button>
                 </div>
                 {errors.databaseUrl && (
-                  <p className="text-red-400 text-sm mt-1">{errors.databaseUrl}</p>
+                  <p className="text-red-400 text-sm mt-1">
+                    {errors.databaseUrl}
+                  </p>
                 )}
               </div>
             </div>
@@ -683,9 +801,14 @@ const handleDeleteProject = async () => {
                   <li>• Go to your Supabase project dashboard</li>
                   <li>• Navigate to Settings → API</li>
                   <li>• Copy the Project URL and anon public key</li>
-                  <li>• For Service Role key, use the service_role secret key</li>
+                  <li>
+                    • For Service Role key, use the service_role secret key
+                  </li>
                   <li>• Database URL is in Settings → Database</li>
-                  <li>• Access Token can be generated from your Supabase account settings</li>
+                  <li>
+                    • Access Token can be generated from your Supabase account
+                    settings
+                  </li>
                 </ul>
               </div>
             </div>
@@ -700,7 +823,7 @@ const handleDeleteProject = async () => {
             >
               Load Example
             </button>
-            
+
             <div className="flex gap-3 flex-1">
               <button
                 type="button"
@@ -709,7 +832,7 @@ const handleDeleteProject = async () => {
               >
                 Cancel
               </button>
-              
+
               <button
                 type="submit"
                 className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-lg transition-all duration-200 font-medium"
