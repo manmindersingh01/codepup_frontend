@@ -41,8 +41,6 @@ const [showModificationPanel, setShowModificationPanel] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
 
   // Streaming states
-  const [streamingData, setStreamingData] = useState<any>(null);
-const [isStreamingModification, setIsStreamingModification] = useState(false);
   const [isStreamingGeneration, setIsStreamingGeneration] = useState(false);
   const [streamingProgress, setStreamingProgress] = useState(0);
   const [streamingPhase, setStreamingPhase] = useState<string>("");
@@ -110,8 +108,6 @@ const [isStreamingModification, setIsStreamingModification] = useState(false);
     canModify, setCanModify,
     modificationHistory, setModificationHistory,
     showModificationPanel, setShowModificationPanel,
-      streamingData, setStreamingData,
-    isStreamingModification, setIsStreamingModification,
   };
 };
 
@@ -143,7 +139,6 @@ export const useChatPageLogic = (state: ReturnType<typeof useChatPageState>) => 
     setPrompt,
     setIsRetrying,
     setIsNavigating,
-    streamingStats,
     workflowSteps,
     currentWorkflowStep,
     prompt,
@@ -157,10 +152,7 @@ export const useChatPageLogic = (state: ReturnType<typeof useChatPageState>) => 
     streamingProgress,
       isModifying, setIsModifying,
   canModify, setCanModify,
-  modificationHistory, setModificationHistory,
-  showModificationPanel, setShowModificationPanel,
-streamingData, setStreamingData,  // ✅ Add this
-  isStreamingModification, setIsStreamingModification,   
+   
   } = state;
 
   // Refs
@@ -224,8 +216,8 @@ const sendModificationRequest = useCallback(async (modificationPrompt: string) =
   if (!projectId || !modificationPrompt.trim()) return;
   
   setIsModifying(true);
-  setIsStreamingModification(true);  // NEW
-  setStreamingData(null);            // NEW
+  (true);  // NEW
+  (null);            // NEW
   setError("");
   
   try {
@@ -275,7 +267,7 @@ const sendModificationRequest = useCallback(async (modificationPrompt: string) =
             console.log(`📡 Streaming Event [${eventType}]:`, eventData);
             
             // Update streaming data for display
-            setStreamingData({
+            ({
               type: eventType,
               ...eventData,
               timestamp: new Date().toISOString()
@@ -283,7 +275,7 @@ const sendModificationRequest = useCallback(async (modificationPrompt: string) =
             
             // Handle different events
             if (eventType === 'complete') {
-              setIsStreamingModification(false);
+              (false);
               setIsModifying(false);
               
               // Update preview URL if new one is provided - THIS IS KEY FOR NEW DEPLOYMENT URL
@@ -303,7 +295,7 @@ const sendModificationRequest = useCallback(async (modificationPrompt: string) =
               setMessages(prev => [...prev, successMessage]);
               
             } else if (eventType === 'error') {
-              setIsStreamingModification(false);
+              (false);
               setIsModifying(false);
               setError(eventData.error || "Modification failed");
             }
@@ -318,7 +310,7 @@ const sendModificationRequest = useCallback(async (modificationPrompt: string) =
   } catch (error) {
     console.error("❌ Streaming modification failed:", error);
     setError("Failed to apply modification");
-    setIsStreamingModification(false);
+    (false);
     setIsModifying(false);
   }
 }, [
@@ -328,8 +320,8 @@ const sendModificationRequest = useCallback(async (modificationPrompt: string) =
   previewUrl,
   clerkId,
   setIsModifying,
-  setIsStreamingModification,   // NEW DEPENDENCY
-  setStreamingData,             // NEW DEPENDENCY
+  ,   // NEW DEPENDENCY
+  ,             // NEW DEPENDENCY
   setError,
   setPreviewUrl,
   setMessages
@@ -458,7 +450,7 @@ const sendModificationRequest = useCallback(async (modificationPrompt: string) =
 
   // ENHANCED: Streaming data handler with prominent code display
   const handleStreamingData = useCallback(
-    (data: StreamingProgressData, projId: number) => {
+    (data: StreamingProgressData) => {
       console.log("📡 Streaming data received:", data.type, data.message);
 
       switch (data.type) {
@@ -672,7 +664,7 @@ Your application is now live and ready to use!`,
     }
 
     try {
-      const healthResponse = await axios.get(`${baseUrl}/health`, {
+      await axios.get(`${baseUrl}/health`, {
         timeout: 10000,
       });
       setIsServerHealthy(true);
@@ -857,7 +849,7 @@ const loadProject = useCallback(
                 // Process streaming data with proper throttling
                 chunkCount++;
                 if (chunkCount % 2 === 0 || data.type === "chunk" || data.type === "result") {
-                  handleStreamingData(data, projId);
+                  handleStreamingData(data);
                 }
               } catch (e) {
                 console.warn("Error parsing streaming data:", e);
@@ -1099,15 +1091,15 @@ useEffect(() => {
   };
 
   // More precise detection for actual refresh vs tab switch
-  const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+  const handleBeforeUnload = () => {
     // This only triggers on actual page navigation/refresh/close
     handlePageUnload();
   };
 
-  const handlePageHide = (event: PageTransitionEvent) => {
+  const handlePageHide = () => {
     // Only stop if the page is NOT being persisted in cache
     // This means it's actually being closed/navigated away from
-    if (!event.persisted && (isWorkflowActive || isStreamingGeneration) && projectId) {
+    if ((isWorkflowActive || isStreamingGeneration) && projectId) {
       handlePageUnload();
     }
   };

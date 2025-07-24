@@ -52,8 +52,6 @@ const ChatPage: React.FC = () => {
     currentGeneratingFile,
     showCodeStream,
     currentProjectInfo,
-     streamingData,
-  isStreamingModification,
   isModifying
   } = state;
 
@@ -439,47 +437,6 @@ const ChatPage: React.FC = () => {
     </div>
   ) : (
     <>
-   {/* UPDATE THIS SECTION - Fix colors for dark theme */}
-{/* Live Streaming Display - Shows continuous data */}
-{isStreamingModification && streamingData && (
-  <div className="p-3 rounded-lg bg-gradient-to-r from-slate-800/80 to-slate-700/80 border border-slate-600/50 mr-4 mb-4">
-    {/* Header with live indicator */}
-    <div className="flex items-center gap-3 mb-3">
-      <div className="w-6 h-6 bg-blue-500/20 rounded-full flex items-center justify-center">
-        <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
-      </div>
-      <div className="flex-1">
-        <h3 className="font-medium text-white">🔴 Live Stream</h3>
-        <p className="text-xs text-slate-300">Real-time modification progress</p>
-      </div>
-      <div className="text-xs text-slate-400">
-        {new Date(streamingData.timestamp).toLocaleTimeString()}
-      </div>
-    </div>
-    
-    {/* Live Stream Output - Shows exactly what backend sends */}
-    <div className="bg-black/60 rounded-lg p-3 font-mono text-xs">
-      <div className="text-green-400 mb-2">📡 Latest Event: {streamingData.type}</div>
-      
-      {/* Show raw streaming data */}
-      <div className="text-slate-300 whitespace-pre-wrap break-all max-h-32 overflow-y-auto">
-        {JSON.stringify(streamingData, null, 2)}
-      </div>
-      
-      {/* Quick status line */}
-      <div className="mt-2 pt-2 border-t border-slate-600 text-blue-300">
-        <div>Phase: {streamingData.phase || streamingData.type || 'Unknown'}</div>
-        <div>Message: {streamingData.message || 'Processing...'}</div>
-        {streamingData.percentage !== undefined && (
-          <div>Progress: {Math.round(streamingData.percentage)}%</div>
-        )}
-        {streamingData.currentFile && (
-          <div>File: {streamingData.currentFile}</div>
-        )}
-      </div>
-    </div>
-  </div>
-)}
       {messages
         .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())
         .map((message) => (
@@ -544,7 +501,7 @@ const ChatPage: React.FC = () => {
                   ? "Server offline..."
                   : isWorkflowActive || isStreamingGeneration
                   ? "Workflow in progress..."
-                   : isModifying || isStreamingModification    // ADD THIS
+                   : isModifying || false    // ADD THIS
       ? "Modification in progress..."    
                   : "Describe your project or changes..."
               }
@@ -559,7 +516,7 @@ const ChatPage: React.FC = () => {
                 isNavigating ||
                 isServerHealthy === false  ||  
                   isModifying ||                   
-    isStreamingModification   
+    false   
               }
               maxLength={1000}
             />
@@ -575,7 +532,7 @@ const ChatPage: React.FC = () => {
                 isNavigating ||
                 isServerHealthy === false ||
     isModifying ||                    // ADD THIS
-    isStreamingModification   
+    false   
               }
               className="absolute bottom-2 right-2 p-1.5 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 disabled:cursor-not-allowed rounded-lg transition-colors duration-200"
             >
@@ -584,7 +541,7 @@ const ChatPage: React.FC = () => {
               isStreamingGeneration ||
               isWorkflowActive ||  
                isModifying ||                     
-  isStreamingModification ? (
+  false ? (
                 <Loader2 className="w-4 h-4 text-white animate-spin" />
               ) : (
                 <Send className="w-4 h-4 text-white" />
